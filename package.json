@@ -1,0 +1,16 @@
+{
+  "name": "sorbit-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-pouchdb": "^4.2.0",
+    "pouchdb": "^9.0.0"
+  }
+}
