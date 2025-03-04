@@ -1,12 +1,11 @@
-import express from 'express';
-import path from 'path';
-import cors from 'cors';
-import session from 'express-session';
-import passport from 'passport';
-import pool from './db/index.js';
-import mountRoutes from './routes/index.js';
+const express = require('express');
+const path = require('path')
+const cors = require('cors')
+const session = require('express-session')
+const passport = require('passport')
+const pool = require('./db/index.js');
+const mountRoutes = require('./routes/index.js');
 
-const __dirname = import.meta.dirname;
 const app = express();
 
 app.use(express.static(path.join(__dirname, process.env.CLIENTDIR, "./dist")));
@@ -14,8 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 // Session store
-const pgSession = (await import('connect-pg-simple')).default;
-const pgStore = pgSession(session);
+const pgStore = require('connect-pg-simple')(session);
 app.use(session({
     secret: process.env.SECRET,
     resave: false,

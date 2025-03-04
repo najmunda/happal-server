@@ -1,10 +1,9 @@
-import express from 'express';
-import passport from 'passport';
-import LocalStrategy from 'passport-local';
-import format from 'pg-format';
-import * as db from '../db/index.js'
-import * as crypto from 'node:crypto';
-import PromiseRouter from 'express-promise-router';
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const format = require('pg-format');
+const crypto = require('node:crypto');
+const PromiseRouter = require('express-promise-router');
+const db = require('../db/index.js');
 
 const router = new PromiseRouter();
 
@@ -52,12 +51,7 @@ router.post('/signup', function(req, res, next) {
         id: result.rows[0].id,
         username: req.body.username,
       };
-      req.logIn(user, function(err) {
-        if (err) {
-          return next(err);
-        }
-        res.send({'message': 'User signed and authenticated.'});
-      });
+      res.send({'message': 'User signed.'});
     });
   });
 });
@@ -77,7 +71,7 @@ router.post('/login', function(req, res, next) {
               return next(err);
           }
 
-          res.send({'message': 'User authenticated.'});
+          res.send({'user': {id: user.id, username: user.username}, 'message': 'User authenticated.'});
       });
   })(req, res, next);
 });
@@ -91,4 +85,13 @@ router.post('/logout', function(req, res, next) {
   })
 });
 
-export default router;
+function checkAuthentication(req, res, next) {
+  if (req.isAuthenticated()) {
+    next();
+  } else {
+    return res.send(400, 'User not autheticated.');
+  }
+}
+
+module.exports = router;
+module.exports.checkAuthentication = checkAuthentication;

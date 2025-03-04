@@ -1,7 +1,9 @@
-import users from "./users.js";
+const users = require("./users.js");
+const cards = require("./cards.js");
 
 function mountRoutes(app) {
   app.use('/users', users);
+  app.use('/cards', cards);
 }
 
-export default mountRoutes;
+module.exports = mountRoutes;

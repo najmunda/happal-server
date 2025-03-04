@@ -2,7 +2,6 @@
   "name": "happal-server",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "start": "nodemon --env-file=config.env index.js"
   },
@@ -30,6 +29,7 @@
     "@types/passport-local": "^1.0.38",
     "@types/pg": "^8.11.11",
     "@types/pg-format": "^1.0.5",
+    "@types/pouchdb": "^6.4.2",
     "nodemon": "^3.1.9"
   }
 }
