@@ -1,7 +1,12 @@
 const PouchDB = require('pouchdb');
 
-const config = PouchDB.defaults({prefix: "./databases/"});
+const config = {
+  prefix: "./databases/"
+}
 
-module.exports = PouchDB;
+function initUserCardsDB(userid) {
+  return new PouchDB(`db-${userid}`, config);
+}
 
-module.exports.config = config;
+module.exports.config = PouchDB.defaults(config);
+module.exports.initUserCardsDB = initUserCardsDB;

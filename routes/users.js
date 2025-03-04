@@ -4,6 +4,7 @@ const format = require('pg-format');
 const crypto = require('node:crypto');
 const PromiseRouter = require('express-promise-router');
 const db = require('../db/index.js');
+const { initUserCardsDB } = require('../db/cards.js');
 
 const router = new PromiseRouter();
 
@@ -51,6 +52,7 @@ router.post('/signup', function(req, res, next) {
         id: result.rows[0].id,
         username: req.body.username,
       };
+      initUserCardsDB(user.id);
       res.send({'message': 'User signed.'});
     });
   });
