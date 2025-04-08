@@ -1,11 +1,17 @@
 const pg = require('pg');
 
-const { Pool } = pg;
-const pool = new Pool();
+try {
+  const { Pool } = pg;
+  const pool = new Pool();
 
-function query(text, params) {
-  return pool.query(text, params);
+  function query(text, callback) {
+    return pool.query(text, [], callback);
+  }
+
+  console.log("db: Database connected.");
+  
+  module.exports.pool = pool;
+  module.exports.query = query;
+} catch (error) {
+  console.log("db: ", error);
 }
-
-module.exports.pool = pool;
-module.exports.query = query;

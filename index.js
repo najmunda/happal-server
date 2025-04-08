@@ -1,9 +1,9 @@
 const express = require('express');
-const path = require('path')
-const cors = require('cors')
-const session = require('express-session')
-const passport = require('passport')
-const pool = require('./db/index.js');
+const path = require('path');
+const cors = require('cors');
+const session = require('express-session');
+const passport = require('passport');
+const db = require('./db/index.js');
 const mountRoutes = require('./routes/index.js');
 
 const app = express();
@@ -19,25 +19,13 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: new pgStore({
-        pool: pool,
+        pool: db.pool,
         createTableIfMissing: true,
     }),
 }));
 app.use(passport.authenticate('session'));
 
 mountRoutes(app);
-
-// Serve client
-app.use((req, res, next) => {
-    if (/(.js|.css|.ttf|.png|.svg|)$/i.test(req.path)) {
-        next();
-    } else {
-        res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-        res.header('Expires', '-1');
-        res.header('Pragma', 'no-cache');
-        res.sendFile(path.join(__dirname, process.env.CLIENTDIR, "./dist", 'index.html'));
-    }
-});
 
 // Start the server
 const PORT = process.env.PORT || 8080;

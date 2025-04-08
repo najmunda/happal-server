@@ -1,13 +1,19 @@
-const PromiseRouter = require('express-promise-router');
-const PouchDB = require('../db/cards.js');
-const { checkAuthentication } = require('./users.js')
+const PromiseRouter = require("express-promise-router");
+const PouchDB = require("../db/cards.js");
+const { checkAuthentication } = require("./authLocal.js");
 
-const router = new PromiseRouter();
+try {
+  const router = new PromiseRouter();
 
-const db = require('express-pouchdb')(PouchDB.config);
+  const db = require("express-pouchdb")(PouchDB.config);
 
-router.use("/", checkAuthentication, function(req, res) {
-  db(req, res);
-});
+  router.use("/", checkAuthentication, function (req, res) {
+    db(req, res);
+  });
 
-module.exports = router;
+  console.log("cards: PouchDB is ready.");
+
+  module.exports = router;
+} catch (error) {
+  console.log("cards: ", error);
+}
