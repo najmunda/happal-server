@@ -1,11 +1,11 @@
-// const users = require("./authGoogle.js");
-const cards = require("./cards.js");
+const user = require("./user.js");
+const cardDb = require("./cardDb.js");
 const authGoogle = require("./authGoogle.js");
 
 function mountRoutes(app) {
-  // app.use('/users', users);
-  app.use("/cards", cards);
-  app.use("/", authGoogle);
+  app.use('/user', user);
+  app.use("/db", cardDb);
+  app.use("/user", authGoogle);
 }
 
 module.exports = mountRoutes;

@@ -12,7 +12,7 @@ passport.use(
   new GoogleStrategy.OAuth2Strategy({
     clientID: process.env['GOOGLE_CLIENT_ID'],
     clientSecret: process.env['GOOGLE_CLIENT_SECRET'],
-    callbackURL: 'http://localhost:3000/oauth2/redirect/google',
+    callbackURL: 'http://localhost:3000/user/oauth2/redirect/google',
     scope: ['profile',],
     state: true,
   },
@@ -67,18 +67,6 @@ passport.use(
   })
 );
 
-passport.serializeUser(function (user, cb) {
-  process.nextTick(function () {
-    cb(null, { id: user.id, username: user.username });
-  });
-});
-
-passport.deserializeUser(function (user, cb) {
-  process.nextTick(function () {
-    cb(null, user);
-  });
-});
-
 // Redirect to Google Route
 router.get('/login/google', passport.authenticate('google'));
 
@@ -95,22 +83,10 @@ router.get('/oauth2/redirect/google',
           return next(err);
         }
 
-        res.send({
-          user: { id: user.id, username: user.username },
-          message: "User authenticated.",
-        });
+        res.redirect("http://localhost:5173/account");
       });
     }
   )(req, res, next);
-});
-
-router.post("/logout", function (req, res, next) {
-  req.logout(function (err) {
-    if (err) {
-      return next(err);
-    }
-    res.send({ message: "User unauthenticated." });
-  });
 });
 
 module.exports = router;

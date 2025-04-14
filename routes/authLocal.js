@@ -47,18 +47,6 @@ passport.use(
   }),
 );
 
-passport.serializeUser(function (user, cb) {
-  process.nextTick(function () {
-    cb(null, { id: user.id, username: user.username });
-  });
-});
-
-passport.deserializeUser(function (user, cb) {
-  process.nextTick(function () {
-    cb(null, user);
-  });
-});
-
 // Routes
 router.post("/signup", function (req, res, next) {
   const salt = crypto.randomBytes(16);
@@ -118,22 +106,4 @@ router.post("/login", function (req, res, next) {
   })(req, res, next);
 });
 
-router.post("/logout", function (req, res, next) {
-  req.logout(function (err) {
-    if (err) {
-      return next(err);
-    }
-    res.send({ message: "User unauthenticated." });
-  });
-});
-
-function checkAuthentication(req, res, next) {
-  if (req.isAuthenticated()) {
-    next();
-  } else {
-    return res.send(400, "User not autheticated.");
-  }
-}
-
 module.exports = router;
-module.exports.checkAuthentication = checkAuthentication;
