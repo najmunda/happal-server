@@ -36,6 +36,22 @@ router.get('/me', function(req, res, next) {
   }
 });
 
+router.post('/last-sync', function(req, res, next) {
+  if (req.isAuthenticated()) {
+    db.query(
+      format('UPDATE users SET last_sync = CURRENT_TIMESTAMP WHERE id = %L', req.user['id']),
+      function (err, result) {
+        if (err) {
+          return next(err)
+        }
+        return res.status(200).send("Last sync updated.");
+      }
+    )
+  } else {
+    return res.send(401, "User not autheticated.");
+  }
+});
+
 router.post("/logout", function (req, res, next) {
   req.logout(function (err) {
     if (err) {
