@@ -9,20 +9,36 @@ const mountRoutes = require('./routes/index.js');
 const app = express();
 
 app.use(express.static(path.join(__dirname, process.env.CLIENTDIR, "./dist")));
-app.use(cors());
 app.use(express.json());
 
-// Session store
+// CORS
+const corsOption = {
+    credentials: true,
+};
+// if (app.get('env') === 'production') {
+//     corsOption.origin = 'SET YOUR FRONTEND LINK'
+// }
+app.use(cors(corsOption));
+
+// Session
 const pgStore = require('connect-pg-simple')(session);
-app.use(session({
+const sessionOption = {
     secret: process.env.SECRET,
     resave: false,
-    saveUninitialized: false,
     store: new pgStore({
         pool: db.pool,
         createTableIfMissing: true,
     }),
-}));
+    rolling: true,
+    saveUninitialized: false,
+    cookie: { maxAge: 1000 * 60 * 60 * 24 * 14 },
+};
+if (app.get('env') === 'production') {
+    app.set('trust proxy', 1);
+    sessionOption.cookie.secure = true;
+    sessionOption.sameSite = 'none';
+}
+app.use(session(sessionOption));
 app.use(passport.authenticate('session'));
 
 mountRoutes(app);
