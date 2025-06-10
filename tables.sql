@@ -16,8 +16,6 @@ BEGIN
     RETURN QUERY SELECT users.id, users.username FROM users WHERE users.username = new_username;
 END;
 $$;
--- SELECT * FROM insert_user(new user passport profile.displayName);
-
 
 CREATE TABLE IF NOT EXISTS users (
     id UUID DEFAULT gen_random_uuid(),

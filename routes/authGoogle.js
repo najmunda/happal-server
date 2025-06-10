@@ -17,7 +17,6 @@ passport.use(
     state: true,
   },
   function verify(accessToken, refreshToken, profile, cb) {
-    console.log(profile);
     db.query(
       format('SELECT * FROM credentials WHERE provider_id = %L AND provider = %L', profile.id, profile.provider),
       function (err, result) {
@@ -31,7 +30,7 @@ passport.use(
             format('SELECT * FROM insert_user(%L)', profile.displayName),
             function (err, result) {
               if (err) {
-                return cb(err)
+                return cb(err);
               }
               const newUser = result.rows[0];
               initUserCardsDB(newUser.username);
