@@ -4,6 +4,7 @@ const cors = require('cors')
 const session = require('express-session')
 const passport = require('passport')
 const db = require('./db/index.js')
+const { requestLogger } = require('./logger.js')
 const mountRoutes = require('./routes/index.js')
 
 const app = express()
@@ -40,7 +41,7 @@ if (app.get('env') === 'production') {
 }
 app.use(session(sessionOption))
 app.use(passport.authenticate('session'))
-
+app.use(requestLogger)
 mountRoutes(app)
 
 // Start the server
