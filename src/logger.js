@@ -1,30 +1,30 @@
 const { createLogger, format, transports } = require('winston')
+const path = require('node:path')
+
+const logDir = 'log'
 
 const logger = createLogger({
   level: 'info',
-  format: format.combine(format.timestamp(), format.json()),
+  format: format.combine(
+    format.timestamp(),
+    format.errors({ stack: true }),
+    format.json()
+  ),
   defaultMeta: { service: 'api-server' },
   transports: [
-    new transports.File({ filename: 'log/combined.log' }),
-    new transports.File({ filename: 'log/error.log', level: 'error' })
+    new transports.File({ filename: path.join(logDir, 'combined.log') }),
+    new transports.File({
+      filename: path.join(logDir, 'error.log'),
+      level: 'error'
+    })
+  ],
+  exceptionHandlers: [
+    new transports.File({ filename: path.join(logDir, 'exceptions.log') })
+  ],
+  rejectionHandlers: [
+    new transports.File({ filename: path.join(logDir, 'rejections.log') })
   ]
 })
-
-const httpLogFilter = format((info) => (info.type === 'http' ? info : false))
-
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new transports.Console({
-      format: format.combine(
-        httpLogFilter(),
-        format.printf(
-          (info) =>
-            `${info.method} ${info.url} ${info.status} ${info.durationMs}`
-        )
-      )
-    })
-  )
-}
 
 function requestLogger(req, res, next) {
   const start = Date.now()
@@ -45,4 +45,47 @@ function requestLogger(req, res, next) {
   next()
 }
 
-module.exports = { requestLogger }
+function errorLogger(error, req, res, next) {
+  logger.log({
+    level: 'error',
+    type: 'error',
+    message: error.message,
+    stack: error.stack,
+    method: req.method,
+    url: req.originalUrl,
+    userId: req.user?.id || null
+  })
+
+  res.status(500).json({ error: 'Internal Server Error' })
+}
+
+const httpLogFilter = format((info) => (info.type === 'http' ? info : false))
+const errorLogFilter = format((info) => (info.type === 'error' ? info : false))
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(
+    new transports.Console({
+      format: format.combine(
+        httpLogFilter(),
+        format.printf(
+          (info) =>
+            `${info.method} ${info.url} ${info.status} ${info.durationMs}`
+        )
+      )
+    })
+  )
+  logger.add(
+    new transports.Console({
+      format: format.combine(
+        errorLogFilter(),
+        format.printf(
+          (info) => `${info.method} ${info.url} ${info.message} ${info.stack}`
+        )
+      )
+    })
+  )
+}
+
+logger.error(new Error('uji langsung'))
+
+module.exports = { requestLogger, errorLogger }

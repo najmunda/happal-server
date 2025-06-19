@@ -1,15 +1,15 @@
 const express = require('express')
-const path = require('path')
+// const path = require('path')
 const cors = require('cors')
 const session = require('express-session')
 const passport = require('passport')
 const db = require('./db/index.js')
-const { requestLogger } = require('./logger.js')
+const { requestLogger, errorLogger } = require('./logger.js')
 const mountRoutes = require('./routes/index.js')
 
 const app = express()
 
-app.use(express.static(path.join(__dirname, process.env.CLIENTDIR, './dist')))
+// app.use(express.static(path.join(__dirname, process.env.CLIENTDIR, './dist')))
 app.use(express.json())
 
 // CORS
@@ -43,6 +43,7 @@ app.use(session(sessionOption))
 app.use(passport.authenticate('session'))
 app.use(requestLogger)
 mountRoutes(app)
+app.use(errorLogger)
 
 // Start the server
 const PORT = process.env.PORT || 8080
