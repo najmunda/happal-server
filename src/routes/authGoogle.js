@@ -7,7 +7,6 @@ const { initUserCardsDB } = require('../db/cards.js')
 
 const router = new PromiseRouter()
 
-// Set Local Strategy
 passport.use(
   new GoogleStrategy.OAuth2Strategy(
     {
@@ -17,65 +16,50 @@ passport.use(
       scope: ['profile'],
       state: true
     },
-    function verify(accessToken, refreshToken, profile, cb) {
-      db.query(
-        format(
-          'SELECT * FROM credentials WHERE provider_id = %L AND provider = %L',
-          profile.id,
-          profile.provider
-        ),
-        function (err, result) {
-          if (err) {
-            return cb(err)
-          }
-          const cred = result.rows[0]
-          if (!cred) {
-            // Init new user
-            db.query(
-              format('SELECT * FROM insert_user(%L)', profile.displayName),
-              function (err, result) {
-                if (err) {
-                  return cb(err)
-                }
-                const newUser = result.rows[0]
-                initUserCardsDB(newUser.username)
-                db.query(
-                  format(
-                    'INSERT INTO credentials (user_id, provider_id, provider) VALUES (%L, %L, %L)',
-                    newUser.id,
-                    profile.id,
-                    profile.provider
-                  ),
-                  function (err) {
-                    if (err) {
-                      return cb(err)
-                    }
-                    return cb(null, newUser)
-                  }
-                )
-              }
+    async function verify(accessToken, refreshToken, profile, cb) {
+      try {
+        const {
+          rows: [credential]
+        } = await db.query(
+          format(
+            'SELECT * FROM credentials WHERE provider_id = %L AND provider = %L',
+            profile.id,
+            profile.provider
+          )
+        )
+        if (!credential) {
+          // Init new user
+          const {
+            rows: [newUser]
+          } = await db.query(
+            format('SELECT * FROM insert_user(%L)', profile.displayName)
+          )
+          initUserCardsDB(newUser.username)
+          // Init new user google credential
+          await db.query(
+            format(
+              'INSERT INTO credentials (user_id, provider_id, provider) VALUES (%L, %L, %L)',
+              newUser.id,
+              profile.id,
+              profile.provider
             )
-          } else {
-            // User already registered with google account
-            db.query(
-              format(
-                'SELECT id, username FROM users WHERE id = %L',
-                cred.user_id
-              ),
-              function (err, result) {
-                if (err) {
-                  return cb(err)
-                }
-                const user = result.rows[0]
-                if (!user) {
-                  return cb(err)
-                }
-                return cb(null, user)
-              }
+          )
+          return cb(null, newUser)
+        } else {
+          // User already registered with google account
+          const {
+            rows: [user]
+          } = await db.query(
+            format(
+              'SELECT id, username FROM users WHERE id = %L',
+              credential.user_id
             )
-          }
+          )
+          return cb(null, user)
         }
-      )
+      } catch (error) {
+        cb(error)
+      }
     }
   )
 )
@@ -85,14 +69,14 @@ router.get('/login/google', passport.authenticate('google'))
 
 // Route for processing authenticate response and logs user in, after user back to the app
 router.get('/oauth2/redirect/google', function (req, res, next) {
-  passport.authenticate('google', function (err, user) {
-    if (err) {
-      return next(err)
+  passport.authenticate('google', function (error, user) {
+    if (error) {
+      return next(error)
     }
 
-    req.logIn(user, function (err) {
-      if (err) {
-        return next(err)
+    req.logIn(user, function (error) {
+      if (error) {
+        return next(error)
       }
 
       res.redirect('http://localhost:5173/account')
