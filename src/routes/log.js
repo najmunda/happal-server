@@ -10,8 +10,8 @@ router.post('/client', async function (req, res, next) {
   if (log !== '') {
     await db.query(
       format(
-        'INSERT INTO client_logs ("timestamp", "level", "type", "service", "message", stack, user_agent) SELECT * FROM json_populate_recordset(NULL:client_log, %L)',
-        log
+        'INSERT INTO client_logs ("timestamp", "level", "type", "service", "message", stack, user_agent) SELECT * FROM json_populate_recordset(NULL::client_log, %L)',
+        JSON.stringify(log)
       )
     )
   }
