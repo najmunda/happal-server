@@ -20,34 +20,54 @@ passport.deserializeUser(function (user, cb) {
 
 const checkAuthentication = function (req, res, next) {
   if (req.isAuthenticated()) {
-    console.log('auth!')
     next()
   } else {
-    return res.status(401).send('User not authenticated.')
+    return res
+      .status(401)
+      .json({ status: 'error', message: 'User not authenticated' })
   }
 }
 
 // General Users/Auth Routes
 router.get('/me', checkAuthentication, async function (req, res, next) {
   const {
+    user: { id: userId }
+  } = req
+
+  if (!userId) {
+    throw new Error('Request object is missing user.id')
+  }
+
+  const {
     rows: [userDetail]
   } = await db.query(
-    format(
-      'SELECT id, username, last_sync FROM users WHERE id = %L',
-      req.user['id']
-    )
+    format('SELECT id, username, last_sync FROM users WHERE id = %L', userId)
   )
-  return res.status(200).json(userDetail)
+
+  if (!userDetail) {
+    throw new Error('Query did not return user detail')
+  }
+
+  return res.status(200).json({ status: 'success', data: { userDetail } })
 })
 
 router.post('/last-sync', checkAuthentication, async function (req, res, next) {
+  const {
+    user: { id: userId }
+  } = req
+
+  if (!userId) {
+    throw new Error('Request object is missing user.id')
+  }
+
   await db.query(
     format(
       'UPDATE users SET last_sync = CURRENT_TIMESTAMP WHERE id = %L',
-      req.user['id']
+      userId
     )
   )
-  return res.status(200).send('Last sync updated.')
+
+  return res.status(200).json({ status: 'success', data: null })
 })
 
 router.post('/logout', function (req, res, next) {
@@ -55,7 +75,8 @@ router.post('/logout', function (req, res, next) {
     if (err) {
       return next(err)
     }
-    res.send({ message: 'User unauthenticated.' })
+
+    return res.status(200).json({ status: 'success', data: null })
   })
 })
 
