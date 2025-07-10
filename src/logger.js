@@ -46,28 +46,18 @@ function requestLogger(req, res, next) {
 }
 
 function errorLogger(error, req, res, next) {
-  // Handled = new Error('response message', { cause: error })
-  // Unhandled = error
-
-  const isHandled = Object.hasOwn(error, 'cause')
 
   logger.log({
     level: 'error',
     type: 'error',
-    message: isHandled ? error.cause.message : error.message,
-    stack: isHandled ? error.cause.stack : error.stack,
+    message: error.message,
+    stack: error.stack,
     method: req.method,
     url: req.originalUrl,
     userId: req.user?.id || null
   })
 
-  const statusCode = error?.statusCode ?? 500
-  const message =
-    isHandled && error?.message !== ''
-      ? error?.message
-      : 'Internal Server Error'
-
-  return res.status(statusCode).json({ status: 'error', message })
+  return res.status(500).json({ status: 'error', message: 'Internal Server Error' })
 }
 
 const httpLogFilter = format((info) => (info.type === 'http' ? info : false))
