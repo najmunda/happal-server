@@ -15,10 +15,6 @@ router.post('/client', async function (req, res, next) {
           JSON.stringify(log)
         )
       )
-      .catch((error) => {
-        const handledError = new Error('', { cause: error })
-        throw handledError
-      })
   } else {
     return res
       .status(400)
