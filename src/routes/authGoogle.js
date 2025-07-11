@@ -18,6 +18,10 @@ passport.use(
     },
     async function verify(accessToken, refreshToken, profile, cb) {
       try {
+        if (!profile?.id || !profile?.displayName || !profile?.provider) {
+          throw new Error('Google profile is missing id/provider property')
+        }
+
         const {
           rows: [credential]
         } = await db.query(
@@ -27,13 +31,20 @@ passport.use(
             profile.provider
           )
         )
+
         if (!credential) {
+          if (!profile?.displayName) {
+            throw new Error('Google profile is missing displayName property')
+          }
           // Init new user
           const {
             rows: [newUser]
           } = await db.query(
             format('SELECT * FROM insert_user(%L)', profile.displayName)
           )
+          if (!newUser) {
+            throw new Error('insert_user() not returning new user data')
+          }
           initUserCardsDB(newUser.username)
           // Init new user google credential
           await db.query(
@@ -47,6 +58,10 @@ passport.use(
           return cb(null, newUser)
         } else {
           // User already registered with google account
+          if (!credential?.user_id) {
+            throw new Error('Credential is missing user_id property')
+          }
+
           const {
             rows: [user]
           } = await db.query(
@@ -55,6 +70,11 @@ passport.use(
               credential.user_id
             )
           )
+
+          if (!user) {
+            throw new Error('User not found for given credential')
+          }
+
           return cb(null, user)
         }
       } catch (error) {
@@ -69,9 +89,13 @@ router.get('/login/google', passport.authenticate('google'))
 
 // Route for processing authenticate response and logs user in, after user back to the app
 router.get('/oauth2/redirect/google', function (req, res, next) {
-  passport.authenticate('google', function (error, user) {
+  passport.authenticate('google', function (error, user, info) {
     if (error) {
       return next(error)
+    }
+
+    if (!user && info) {
+      return res.status(info.statusCode).json(info.response)
     }
 
     req.logIn(user, function (error) {
