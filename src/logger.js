@@ -46,7 +46,6 @@ function requestLogger(req, res, next) {
 }
 
 function errorLogger(error, req, res, next) {
-
   logger.log({
     level: 'error',
     type: 'error',
@@ -57,7 +56,9 @@ function errorLogger(error, req, res, next) {
     userId: req.user?.id || null
   })
 
-  return res.status(500).json({ status: 'error', message: 'Internal Server Error' })
+  return res
+    .status(500)
+    .json({ status: 'error', message: 'Internal Server Error' })
 }
 
 const httpLogFilter = format((info) => (info.type === 'http' ? info : false))
