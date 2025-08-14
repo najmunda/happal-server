@@ -1,3 +1,5 @@
+const fs = require('fs')
+const https = require('https')
 const express = require('express')
 // const path = require('path')
 const cors = require('cors')
@@ -7,6 +9,9 @@ const db = require('./db/index.js')
 const { requestLogger, errorLogger } = require('./logger.js')
 const mountRoutes = require('./routes/index.js')
 
+const privateKey = fs.readFileSync('../happal.key', 'utf-8')
+const certificate = fs.readFileSync('../happal.crt', 'utf-8')
+const credentials = { key: privateKey, cert: certificate }
 const app = express()
 
 // app.use(express.static(path.join(__dirname, process.env.CLIENTDIR, './dist')))
@@ -14,6 +19,7 @@ app.use(express.json())
 
 // CORS
 const corsOption = {
+  origin: process.env.CLIENT_URL,
   credentials: true
 }
 // if (app.get('env') === 'production') {
@@ -32,13 +38,13 @@ const sessionOption = {
   }),
   rolling: true,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 * 14 }
+  cookie: {
+    secure: true,
+    maxAge: 1000 * 60 * 60 * 24 * 14
+  },
+  sameSite: 'none'
 }
-if (app.get('env') === 'production') {
-  app.set('trust proxy', 1)
-  sessionOption.cookie.secure = true
-  sessionOption.sameSite = 'none'
-}
+app.set('trust proxy', 1)
 app.use(session(sessionOption))
 app.use(passport.authenticate('session'))
 app.use(requestLogger)
@@ -46,8 +52,9 @@ mountRoutes(app)
 app.use(errorLogger)
 
 // Start the server
+const httpsServer = https.createServer(credentials, app)
 const PORT = process.env.PORT || 8080
-app.listen(PORT, () => {
+httpsServer.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`)
   console.log('Press Ctrl+C to quit.')
 })

@@ -12,7 +12,7 @@ passport.use(
     {
       clientID: process.env['GOOGLE_CLIENT_ID'],
       clientSecret: process.env['GOOGLE_CLIENT_SECRET'],
-      callbackURL: 'http://localhost:3000/user/oauth2/redirect/google',
+      callbackURL: `https://${process.env['HOST']}:${process.env['PORT']}/user/oauth2/redirect/google`,
       scope: ['profile'],
       state: true
     },
@@ -103,7 +103,7 @@ router.get('/oauth2/redirect/google', function (req, res, next) {
         return next(error)
       }
 
-      res.redirect('http://localhost:5173/account')
+      res.redirect(`${process.env.CLIENT_URL}/account`)
     })
   })(req, res, next)
 })
