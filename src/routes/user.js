@@ -41,7 +41,7 @@ router.get('/me', checkAuthentication, async function (req, res, next) {
   const {
     rows: [userDetail]
   } = await db.query(
-    format('SELECT id, username, last_sync FROM users WHERE id = %L', userId)
+    format('SELECT username, last_sync FROM users WHERE id = %L', userId)
   )
 
   if (!userDetail) {
