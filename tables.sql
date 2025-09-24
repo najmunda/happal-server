@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id UUID DEFAULT gen_random_uuid(),
     username VARCHAR (15) UNIQUE NOT NULL,
+    user_docs_id SERIAL,
     created_at DATE DEFAULT CURRENT_DATE,
     last_sync TIMESTAMPTZ,
     PRIMARY KEY (id)

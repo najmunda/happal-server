@@ -86,6 +86,11 @@ if (process.env.NODE_ENV !== 'production') {
       )
     })
   )
+  const simpleConsoleTransport = new transports.Console({
+    format: format.combine(format.simple(), format.align())
+  })
+  logger.exceptions.handle(simpleConsoleTransport)
+  logger.rejections.handle(simpleConsoleTransport)
 }
 
 module.exports = { requestLogger, errorLogger }

@@ -1,21 +1,18 @@
 const PouchDB = require('pouchdb')
 const fs = require('node:fs')
 
-const cardDbDir = './databases/'
-
-if (fs.existsSync(cardDbDir) == false) {
-  fs.mkdirSync(cardDbDir)
-}
-
-fs.accessSync(cardDbDir)
+const cardDbDir = './database/'
 
 const config = {
   prefix: cardDbDir
 }
 
-function initUserCardsDB(userid) {
-  return new PouchDB(`db-${userid}`, config)
+if (fs.existsSync(cardDbDir) == false) {
+  fs.mkdirSync(cardDbDir)
+  new PouchDB(`cards`, config)
 }
 
+fs.accessSync(cardDbDir)
+
 module.exports.config = PouchDB.defaults(config)
-module.exports.initUserCardsDB = initUserCardsDB
+module.exports.dir = cardDbDir

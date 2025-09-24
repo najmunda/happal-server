@@ -3,7 +3,6 @@ const GoogleStrategy = require('passport-google-oauth')
 const format = require('pg-format')
 const PromiseRouter = require('express-promise-router')
 const db = require('../db/index.js')
-const { initUserCardsDB } = require('../db/cards.js')
 
 const router = new PromiseRouter()
 
@@ -45,7 +44,6 @@ passport.use(
           if (!newUser) {
             throw new Error('insert_user() not returning new user data')
           }
-          initUserCardsDB(newUser.username)
           // Init new user google credential
           await db.query(
             format(
@@ -66,7 +64,7 @@ passport.use(
             rows: [user]
           } = await db.query(
             format(
-              'SELECT id, username FROM users WHERE id = %L',
+              'SELECT id, username, user_docs_id FROM users WHERE id = %L',
               credential.user_id
             )
           )
