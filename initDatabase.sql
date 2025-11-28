@@ -1,3 +1,13 @@
+-- Run queries as postgres/superuser
+-- psql -U postgres -a -f initDatabase
+
+-- Create database, connect to it.
+CREATE DATABASE happal;
+\c happal;
+
+-- Create required table
+\i 'node_modules/connect-pg-simple/table.sql'
+
 CREATE TABLE IF NOT EXISTS users (
     id UUID DEFAULT gen_random_uuid(),
     username VARCHAR (15) UNIQUE NOT NULL,
@@ -60,3 +70,22 @@ BEGIN
     RETURN QUERY SELECT users.id, users.username FROM users WHERE users.username = new_username;
 END;
 $$;
+
+-- create role api and grant required privileges
+CREATE ROLE "api" LOGIN PASSWORD 'happal_api';
+
+GRANT CONNECT ON DATABASE happal TO "api";
+
+GRANT USAGE ON SCHEMA public TO "api";
+
+GRANT SELECT, INSERT ON TABLE credentials TO "api";
+GRANT SELECT, INSERT, UPDATE ON TABLE users TO "api";
+GRANT INSERT ON TABLE client_logs TO "api";
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE session TO "api";
+
+GRANT USAGE, UPDATE ON SEQUENCE users_user_docs_id_seq TO "api";
+GRANT USAGE, UPDATE ON SEQUENCE client_logs_id_seq TO "api";
+
+GRANT EXECUTE ON FUNCTION insert_user TO "api";
+
+GRANT USAGE ON TYPE client_log TO "api";
