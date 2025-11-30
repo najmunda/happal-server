@@ -53,7 +53,7 @@ CREATE TYPE client_log AS (
 );
 
 CREATE OR REPLACE FUNCTION insert_user (name TEXT)
-RETURNS TABLE (id UUID, username VARCHAR)
+RETURNS TABLE (id UUID, username VARCHAR, user_docs_id INTEGER)
 LANGUAGE PLPGSQL
 AS $$
 DECLARE
@@ -67,7 +67,7 @@ BEGIN
         EXCEPTION WHEN unique_violation THEN
         END;
     END LOOP;
-    RETURN QUERY SELECT users.id, users.username FROM users WHERE users.username = new_username;
+    RETURN QUERY SELECT users.id, users.username, users.user_docs_id FROM users WHERE users.username = new_username;
 END;
 $$;
 
